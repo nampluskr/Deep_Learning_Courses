@@ -8,6 +8,7 @@ import gzip
 import numpy as np
 import os
 
+
 class MNISTDataset(Dataset):
     def __init__(self, images_path, labels_path):
         super().__init__()
@@ -30,6 +31,7 @@ class MNISTDataset(Dataset):
     def __getitem__(self, idx):
         return self.images[idx], self.labels[idx]
 
+
 # 2-layer MLP 모델 정의 (Base)
 class BaseMLPModel(nn.Module):
     def __init__(self):
@@ -43,6 +45,7 @@ class BaseMLPModel(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 # 개선된 2-layer MLP 모델 정의 (BatchNorm + Dropout 추가)
 class ImprovedMLPModel(nn.Module):
@@ -64,10 +67,12 @@ class ImprovedMLPModel(nn.Module):
         x = self.fc3(x)
         return x
 
+
 # Accuracy 계산 함수
 def accuracy(y_pred, y_true):
     _, preds = torch.max(y_pred, dim=1)
     return torch.sum(preds == y_true).item() / y_true.size(0)
+
 
 # 모델 학습 함수
 def train(model, train_loader, loss_fn, optimizer, accuracy, epochs=5):
@@ -91,6 +96,7 @@ def train(model, train_loader, loss_fn, optimizer, accuracy, epochs=5):
               f"loss: {total_loss / len(train_loader):.3f}, "
               f"acc: {total_acc / len(train_loader):.3f}")
         
+        
 # 모델 평가 함수
 def evaluate(model, test_loader, loss_fn, accuracy):
     model.eval()
@@ -109,27 +115,28 @@ def evaluate(model, test_loader, loss_fn, accuracy):
           f"acc: {total_acc / len(test_loader):.3f}")
 
 
-if __main__ == "__main__":
+if __name__ == "__main__":
 
-  data_dir = r"D:\Non_Documents\2025\datasets\mnist"
+    data_dir = r"D:\Non_Documents\2025\datasets\mnist"
 
-  # 데이터셋 로드
-  train_dataset = MNISTDataset(os.path.join(data_dir, "train-images-idx3-ubyte.gz"),
-                               os.path.join(data_dir, "train-labels-idx1-ubyte.gz"))
+    # 데이터셋 로드
+    train_dataset = MNISTDataset(os.path.join(data_dir, "train-images-idx3-ubyte.gz"),
+                                 os.path.join(data_dir, "train-labels-idx1-ubyte.gz"))
 
-  test_dataset = MNISTDataset(os.path.join(data_dir, "t10k-images-idx3-ubyte.gz"),
-                              os.path.join(data_dir, "t10k-labels-idx1-ubyte.gz"))
+    test_dataset = MNISTDataset(os.path.join(data_dir, "t10k-images-idx3-ubyte.gz"),
+                                os.path.join(data_dir, "t10k-labels-idx1-ubyte.gz"))
 
-  # DataLoader 정의
-  train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-  test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+    # DataLoader 정의
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
-  # 모델, 손실 함수, 옵티마이저 정의
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  model = BaseMLPModel().to(device)
-  loss_fn = nn.CrossEntropyLoss()
-  optimizer = optim.Adam(model.parameters(), lr=0.001)
-  
-  # 모델 학습 및 평가 실행
-  train(model, train_loader, loss_fn, optimizer, accuracy, epochs=10)
-  evaluate(model, test_loader, loss_fn, accuracy)
+    # 모델, 손실 함수, 옵티마이저 정의
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = BaseMLPModel().to(device)
+    # model = ImprovedMLPModel().to(device)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    # 모델 학습 및 평가 실행
+    train(model, train_loader, loss_fn, optimizer, accuracy, epochs=10)
+    evaluate(model, test_loader, loss_fn, accuracy)
